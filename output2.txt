@@ -1,0 +1,229 @@
+*******************BEGIN*******************
+operation : b1;
+Begin transaction : T1
+
+
+                  Transaction Table                 
+    timeStamp   state blockedBy blockedOperations
+TID                                              
+T1          1  Active        []                []
+
+
+                 Lock Table                 
+Empty DataFrame
+Columns: [lockMode, TIDList, blockedTIDS]
+Index: []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : r1(Y);
+Item Y read locked by T1
+
+
+                  Transaction Table                 
+    timeStamp   state blockedBy blockedOperations
+TID                                              
+T1          1  Active        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               R    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : w1(Y);
+lock mode is upgraded for the data item Y
+
+
+                  Transaction Table                 
+    timeStamp   state blockedBy blockedOperations
+TID                                              
+T1          1  Active        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : r1(Z);
+Item Z read locked by T1
+
+
+                  Transaction Table                 
+    timeStamp   state blockedBy blockedOperations
+TID                                              
+T1          1  Active        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]          []
+Z               R    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : b2;
+Begin transaction : T2
+
+
+                  Transaction Table                 
+    timeStamp   state blockedBy blockedOperations
+TID                                              
+T1          1  Active        []                []
+T2          2  Active        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]          []
+Z               R    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : r2(Y);
+deadlock is encountered
+
+
+                  Transaction Table                 
+    timeStamp    state blockedBy blockedOperations
+TID                                               
+T1          1   Active        []                []
+T2          2  Blocked      [T1]          [r2(Y);]
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]        [T2]
+Z               R    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : b3;
+Begin transaction : T3
+
+
+                  Transaction Table                 
+    timeStamp    state blockedBy blockedOperations
+TID                                               
+T1          1   Active        []                []
+T2          2  Blocked      [T1]          [r2(Y);]
+T3          3   Active        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]        [T2]
+Z               R    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : r3(Z);
+Item Z read locked by T3
+
+
+                  Transaction Table                 
+    timeStamp    state blockedBy blockedOperations
+TID                                               
+T1          1   Active        []                []
+T2          2  Blocked      [T1]          [r2(Y);]
+T3          3   Active        []                []
+
+
+                 Lock Table                 
+         lockMode   TIDList blockedTIDS
+dataItem                               
+Y               W      [T1]        [T2]
+Z               R  [T1, T3]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : w1(Z);
+deadlock is encountered
+T3 is aborted
+
+
+                  Transaction Table                 
+    timeStamp    state blockedBy blockedOperations
+TID                                               
+T1          1   Active        []                []
+T2          2  Blocked      [T1]          [r2(Y);]
+T3          3  Aborted        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               W    [T1]        [T2]
+Z               W    [T1]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : e1;
+transaction T1 is committed
+*******************BEGIN*******************
+operation : r2(Y);
+Item Y read locked by T2
+
+
+                  Transaction Table                 
+    timeStamp      state blockedBy blockedOperations
+TID                                                 
+T1          1  Committed        []                []
+T2          2     Active        []                []
+T3          3    Aborted        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               R    [T2]          []
+
+
+operation e1
+
+
+                  Transaction Table                 
+    timeStamp      state blockedBy blockedOperations
+TID                                                 
+T1          1  Committed        []                []
+T2          2     Active        []                []
+T3          3    Aborted        []                []
+
+
+                 Lock Table                 
+         lockMode TIDList blockedTIDS
+dataItem                             
+Y               R    [T2]          []
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : w3(Z);
+T3 already aborted
+*******************END*******************
+
+
+*******************BEGIN*******************
+operation : e3;
+T3 is already aborted
+*******************END*******************
+
+
